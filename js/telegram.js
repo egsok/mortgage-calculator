@@ -25,14 +25,25 @@ const TelegramApp = {
      * @returns {boolean} Success status
      */
     init() {
-        // Check if running in Telegram
+        // Check if running in Telegram (not just if SDK loaded)
+        // SDK loads in browser too, but initData will be empty
         if (typeof window.Telegram === 'undefined' || !window.Telegram.WebApp) {
-            console.warn('Not running in Telegram WebApp environment');
+            console.warn('Telegram WebApp SDK not loaded');
             this.initMockMode();
             return false;
         }
 
         this.tg = window.Telegram.WebApp;
+
+        // Check if we're actually inside Telegram (initData present)
+        // In browser, SDK loads but initData is empty
+        const isRealTelegram = this.tg.initData && this.tg.initData.length > 0;
+
+        if (!isRealTelegram) {
+            console.warn('Not running inside Telegram, using mock mode');
+            this.initMockMode();
+            return false;
+        }
 
         // Get user data
         if (this.tg.initDataUnsafe && this.tg.initDataUnsafe.user) {
