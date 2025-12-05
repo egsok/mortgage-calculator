@@ -63,6 +63,11 @@
     padding: 0;
 }
 
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
 html {
     font-size: 16px;
     -webkit-tap-highlight-color: transparent;
@@ -76,9 +81,6 @@ body {
     line-height: 1.5;
     color: var(--text-body);
     background-color: var(--bg-primary);
-    min-height: 100vh;
-    min-height: 100dvh;
-    overflow-x: hidden;
 }
 
 input, button {
@@ -161,6 +163,14 @@ button {
     transform: translateX(30px);
     transition: opacity var(--transition-slow), transform var(--transition-slow), visibility 0s var(--transition-slow);
     z-index: 1;
+
+    /* Hide scrollbar but keep scroll functionality */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.screen::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
 }
 
 .screen.active {
