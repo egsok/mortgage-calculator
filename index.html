@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0F172A">
+    <title>Калькулятор первого взноса</title>
+
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Декоративные элементы фона -->
+        <div class="bg-glow bg-glow--1"></div>
+        <div class="bg-glow bg-glow--2"></div>
+        <div class="bg-noise"></div>
+
+        <!-- Экран 1: Ввод данных -->
+        <section class="screen screen--input active" id="screen-input">
+            <header class="header">
+                <h1 class="title">
+                    <span class="title__line">Через сколько</span>
+                    <span class="title__line title__line--accent">накопишь на квартиру?</span>
+                </h1>
+            </header>
+
+            <form class="form" id="calculator-form">
+                <div class="field">
+                    <label class="field__label">Стоимость квартиры</label>
+                    <div class="field__input-wrap">
+                        <input type="text"
+                               class="field__input"
+                               id="apartment-price"
+                               inputmode="numeric"
+                               value="15 000 000">
+                        <span class="field__suffix">₽</span>
+                    </div>
+                    <input type="range"
+                           class="field__slider"
+                           id="apartment-price-slider"
+                           min="3000000"
+                           max="50000000"
+                           step="500000"
+                           value="15000000">
+                    <span class="field__hint">Средняя 2-комнатная в Москве</span>
+                </div>
+
+                <div class="field">
+                    <label class="field__label">Первоначальный взнос</label>
+                    <div class="field__input-wrap">
+                        <input type="text"
+                               class="field__input field__input--small"
+                               id="down-payment"
+                               inputmode="numeric"
+                               value="30">
+                        <span class="field__suffix">%</span>
+                    </div>
+                    <input type="range"
+                           class="field__slider"
+                           id="down-payment-slider"
+                           min="10"
+                           max="90"
+                           step="5"
+                           value="30">
+                    <span class="field__hint">Обычно не меньше 30%</span>
+                </div>
+
+                <div class="field">
+                    <label class="field__label">Твой доход в месяц</label>
+                    <div class="field__input-wrap">
+                        <input type="text"
+                               class="field__input"
+                               id="income"
+                               inputmode="numeric"
+                               value="350 000">
+                        <span class="field__suffix">₽</span>
+                    </div>
+                    <input type="range"
+                           class="field__slider"
+                           id="income-slider"
+                           min="50000"
+                           max="2000000"
+                           step="10000"
+                           value="350000">
+                    <span class="field__hint">После вычета налогов</span>
+                </div>
+
+                <div class="field">
+                    <label class="field__label">Расходы в месяц</label>
+                    <div class="field__input-wrap">
+                        <input type="text"
+                               class="field__input"
+                               id="expenses"
+                               inputmode="numeric"
+                               value="200 000">
+                        <span class="field__suffix">₽</span>
+                    </div>
+                    <input type="range"
+                           class="field__slider"
+                           id="expenses-slider"
+                           min="30000"
+                           max="1500000"
+                           step="10000"
+                           value="200000">
+                    <span class="field__hint">Примерно, без накоплений</span>
+                </div>
+
+                <div class="field">
+                    <label class="field__label">Уже накоплено</label>
+                    <div class="field__input-wrap">
+                        <input type="text"
+                               class="field__input"
+                               id="savings"
+                               inputmode="numeric"
+                               value="500 000">
+                        <span class="field__suffix">₽</span>
+                    </div>
+                    <input type="range"
+                           class="field__slider"
+                           id="savings-slider"
+                           min="0"
+                           max="20000000"
+                           step="100000"
+                           value="500000">
+                    <span class="field__hint">Которые готовы вложить</span>
+                </div>
+
+                <button type="submit" class="btn btn--primary" id="calculate-btn">
+                    <span class="btn__text">Рассчитать</span>
+                    <svg class="btn__icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </form>
+        </section>
+
+        <!-- Экран 2: Результат -->
+        <section class="screen screen--result" id="screen-result">
+            <div class="result">
+                <div class="result__goal">
+                    <span class="result__label">Твоя цель</span>
+                    <span class="result__value result__value--goal" id="result-goal">4 500 000 ₽</span>
+                    <span class="result__sublabel">первоначальный взнос</span>
+                </div>
+
+                <div class="result__divider"></div>
+
+                <div class="result__timeline" id="result-timeline">
+                    <!-- Основной сценарий -->
+                    <div class="timeline-item timeline-item--main">
+                        <span class="timeline-item__label">При текущем темпе</span>
+                        <span class="timeline-item__value" id="result-current">2 года 8 месяцев</span>
+                    </div>
+
+                    <!-- Сценарий +50к -->
+                    <div class="timeline-item timeline-item--boost">
+                        <span class="timeline-item__label">Если откладывать <strong>+50 000 ₽</strong></span>
+                        <span class="timeline-item__value timeline-item__value--accent" id="result-plus50">1 год 10 месяцев</span>
+                    </div>
+
+                    <!-- Сценарий +100к -->
+                    <div class="timeline-item timeline-item--boost">
+                        <span class="timeline-item__label">Если откладывать <strong>+100 000 ₽</strong></span>
+                        <span class="timeline-item__value timeline-item__value--accent" id="result-plus100">1 год 4 месяца</span>
+                    </div>
+                </div>
+
+                <!-- Edge case: нет возможности копить -->
+                <div class="result__warning hidden" id="result-warning">
+                    <div class="warning-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 9v4M12 17h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <p class="warning-text">
+                        <strong>Сейчас откладывать не получается</strong><br>
+                        Расходы съедают весь доход. Но это можно изменить.
+                    </p>
+                </div>
+
+                <!-- Edge case: уже накоплено -->
+                <div class="result__success hidden" id="result-success">
+                    <div class="success-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <p class="success-text">
+                        <strong>Первоначальный взнос уже есть!</strong><br>
+                        Осталось выбрать квартиру.
+                    </p>
+                </div>
+
+                <div class="result__divider"></div>
+
+                <div class="result__actions">
+                    <button class="btn btn--primary" id="back-to-bot">
+                        <span class="btn__text">Вернуться в бот</span>
+                        <svg class="btn__icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="btn btn--secondary" id="recalculate">
+                        <svg class="btn__icon btn__icon--left" viewBox="0 0 24 24" fill="none">
+                            <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="btn__text">Пересчитать</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/format.js"></script>
+    <script src="js/calculator.js"></script>
+    <script src="js/telegram.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
