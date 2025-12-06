@@ -244,14 +244,18 @@ const App = {
             case 'normal':
             default:
                 // Update timeline values
-                this.elements.resultCurrent.textContent = Format.duration(results.monthsCurrent);
+                let currentText = Format.duration(results.monthsCurrent);
+
+                // Add term category message
+                if (results.termCategory === 'very_long') {
+                    currentText += '\n(очень долго — стоит пересмотреть план)';
+                } else if (results.termCategory === 'long') {
+                    currentText += '\n(долго, есть способы ускорить)';
+                }
+
+                this.elements.resultCurrent.textContent = currentText;
                 this.elements.resultPlus50.textContent = Format.duration(results.monthsPlus50k);
                 this.elements.resultPlus100.textContent = Format.duration(results.monthsPlus100k);
-
-                // Add long-term indicator if needed
-                if (results.isLongTerm) {
-                    this.elements.resultCurrent.textContent += ' (долго, но реально!)';
-                }
                 break;
         }
     },

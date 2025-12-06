@@ -45,8 +45,13 @@ const Calculator = {
         const monthsPlus50k = this.calculateMonths(remaining, monthlySavings + 50000);
         const monthsPlus100k = this.calculateMonths(remaining, monthlySavings + 100000);
 
-        // Check if it's a long term (> 120 months)
-        const isLongTerm = monthsCurrent > 120;
+        // Determine term category for messaging
+        let termCategory = 'normal'; // ≤ 60 months (5 years)
+        if (monthsCurrent > 120) {
+            termCategory = 'very_long'; // > 10 years
+        } else if (monthsCurrent > 60) {
+            termCategory = 'long'; // 5-10 years
+        }
 
         return {
             target,
@@ -56,7 +61,7 @@ const Calculator = {
             monthsPlus50k,
             monthsPlus100k,
             scenarioType,
-            isLongTerm,
+            termCategory,
             // Raw input for CRM
             input: {
                 apartmentPrice,

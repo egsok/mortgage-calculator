@@ -519,6 +519,17 @@ button {
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--text-heading);
+    white-space: pre-line; /* Allow \n line breaks */
+}
+
+.timeline-item__value small,
+.timeline-item__hint {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--warning);
+    margin-top: var(--space-xs);
 }
 
 .timeline-item__value--accent {
