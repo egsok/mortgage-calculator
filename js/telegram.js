@@ -13,12 +13,8 @@ const TelegramApp = {
     // Start parameter (from deep link)
     startParam: null,
 
-    // SaleBot API configuration
-    // TODO: Replace with actual API key before deployment
-    salebot: {
-        apiKey: 'YOUR_SALEBOT_API_KEY',
-        baseUrl: 'https://chatter.salebot.pro/api'
-    },
+    // API proxy endpoint (ключ хранится на сервере в api.php)
+    apiEndpoint: './api.php',
 
     /**
      * Initialize Telegram Mini App
@@ -148,7 +144,7 @@ const TelegramApp = {
     },
 
     /**
-     * Send calculator results to SaleBot CRM
+     * Send calculator results to SaleBot CRM via server proxy
      * @param {Object} data - Calculator results and input data
      * @returns {Promise<boolean>} Success status
      */
@@ -176,25 +172,22 @@ const TelegramApp = {
         };
 
         try {
-            const response = await fetch(
-                `${this.salebot.baseUrl}/${this.salebot.apiKey}/tg_callback`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                }
-            );
+            const response = await fetch(this.apiEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
 
-            console.log('Data sent to SaleBot successfully');
+            console.log('Data sent to CRM successfully');
             return true;
         } catch (error) {
-            console.error('Failed to send data to SaleBot:', error);
+            console.error('Failed to send data to CRM:', error);
             return false;
         }
     },
