@@ -76,7 +76,9 @@ if (!file_exists($config_file)) {
     echo json_encode(['error' => 'Server configuration missing']);
     exit;
 }
-$api_key = include($config_file);
+$config = include($config_file);
+$api_key = $config['api_key'];
+$group_id = $config['group_id'];
 $salebot_url = "https://chatter.salebot.pro/api/{$api_key}/tg_callback";
 
 // Получаем входные данные
@@ -102,11 +104,15 @@ if (!isset($data['message'])) {
     exit;
 }
 
+// Добавляем group_id в данные для SaleBot
+$data['group_id'] = $group_id;
+$payload = json_encode($data);
+
 // Пересылаем в SaleBot
 $ch = curl_init($salebot_url);
 curl_setopt_array($ch, [
     CURLOPT_POST => true,
-    CURLOPT_POSTFIELDS => $input,
+    CURLOPT_POSTFIELDS => $payload,
     CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_TIMEOUT => 10,           // Таймаут 10 сек
