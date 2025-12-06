@@ -68,9 +68,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // ============================================
-// API KEY - хранится только здесь на сервере
+// API KEY - загружается из config.php (не в git)
 // ============================================
-$api_key = 'YOUR_SALEBOT_API_KEY';  // <-- Заменить на реальный ключ
+$config_file = __DIR__ . '/config.php';
+if (!file_exists($config_file)) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Server configuration missing']);
+    exit;
+}
+$api_key = include($config_file);
 $salebot_url = "https://chatter.salebot.pro/api/{$api_key}/tg_callback";
 
 // Получаем входные данные

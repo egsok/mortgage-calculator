@@ -145,6 +145,7 @@ const TelegramApp = {
 
     /**
      * Send calculator results to SaleBot CRM via server proxy
+     * Каждый параметр сохраняется как отдельная переменная клиента
      * @param {Object} data - Calculator results and input data
      * @returns {Promise<boolean>} Success status
      */
@@ -154,21 +155,22 @@ const TelegramApp = {
             return false;
         }
 
+        // Каждое поле станет отдельной переменной в SaleBot
         const payload = {
             user_id: this.user.id,
-            message: JSON.stringify({
-                action: 'calculator_result',
-                apartment_price: data.input.apartmentPrice,
-                down_payment_pct: data.input.downPaymentPercent,
-                income: data.input.income,
-                expenses: data.input.expenses,
-                savings: data.input.savings,
-                result_months: Math.ceil(data.monthsCurrent),
-                target_amount: data.target,
-                scenario_type: data.scenarioType,
-                start_param: this.startParam,
-                timestamp: new Date().toISOString()
-            })
+            message: 'calculator_result',
+            calc_apartment_price: data.input.apartmentPrice,
+            calc_down_payment_pct: data.input.downPaymentPercent,
+            calc_income: data.input.income,
+            calc_expenses: data.input.expenses,
+            calc_savings: data.input.savings,
+            calc_monthly_savings: data.monthlySavings,
+            calc_target_amount: Math.round(data.target),
+            calc_result_months: data.monthsCurrent === Infinity ? -1 : Math.ceil(data.monthsCurrent),
+            calc_scenario_type: data.scenarioType,
+            calc_term_category: data.termCategory,
+            calc_start_param: this.startParam || '',
+            calc_timestamp: new Date().toISOString()
         };
 
         try {

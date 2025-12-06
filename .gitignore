@@ -1,19 +1,12 @@
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
+# API config with secret key
+config.php
 
-# OS
+# Error logs
+api-errors.log
+
+# OS files
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
-
-# Environment
-.env
-.env.local
-
-# Claude
+# Claude Code
 .claude/
