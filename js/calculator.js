@@ -46,11 +46,26 @@ const Calculator = {
         const monthsPlus100k = this.calculateMonths(remaining, monthlySavings + 100000);
 
         // Determine term category for messaging
-        let termCategory = 'normal'; // ≤ 60 months (5 years)
-        if (monthsCurrent > 120) {
-            termCategory = 'very_long'; // > 10 years
-        } else if (monthsCurrent > 60) {
-            termCategory = 'long'; // 5-10 years
+        // Thresholds depend on down payment percentage:
+        // - For high down payments (>65%), allow longer terms
+        // - For standard down payments, use stricter thresholds
+        let longThreshold = 60;  // 5 years default
+        let veryLongThreshold = 120; // 10 years default
+
+        if (downPaymentPercent >= 65) {
+            // For large down payments (buying most/all of apartment)
+            longThreshold = 84;  // 7 years
+            veryLongThreshold = 180; // 15 years
+        } else if (downPaymentPercent >= 50) {
+            longThreshold = 72;  // 6 years
+            veryLongThreshold = 144; // 12 years
+        }
+
+        let termCategory = 'normal';
+        if (monthsCurrent > veryLongThreshold) {
+            termCategory = 'very_long';
+        } else if (monthsCurrent > longThreshold) {
+            termCategory = 'long';
         }
 
         return {
@@ -101,8 +116,8 @@ const Calculator = {
             errors.push('Максимальная стоимость квартиры: 500 000 000 ₽');
         }
 
-        if (params.downPaymentPercent < 10 || params.downPaymentPercent > 90) {
-            errors.push('Первоначальный взнос должен быть от 10% до 90%');
+        if (params.downPaymentPercent < 10 || params.downPaymentPercent > 100) {
+            errors.push('Первоначальный взнос должен быть от 10% до 100%');
         }
 
         if (params.income < 10000) {

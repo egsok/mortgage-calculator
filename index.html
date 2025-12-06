@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0F172A">
+    <meta name="format-detection" content="telephone=no">
     <title>Калькулятор первого взноса</title>
 
     <!-- Telegram Web App SDK -->
@@ -28,7 +29,7 @@
             <header class="header">
                 <h1 class="title">
                     <span class="title__line">Через сколько</span>
-                    <span class="title__line title__line--accent">накопишь на квартиру?</span>
+                    <span class="title__line title__line--accent">накопите на квартиру?</span>
                 </h1>
             </header>
 
@@ -47,10 +48,10 @@
                            class="field__slider"
                            id="apartment-price-slider"
                            min="3000000"
-                           max="50000000"
+                           max="100000000"
                            step="500000"
                            value="15000000">
-                    <span class="field__hint">Средняя 2-комнатная в Москве</span>
+                    <span class="field__hint" id="apartment-price-hint">Средняя 2-комнатная в Москве</span>
                 </div>
 
                 <div class="field">
@@ -67,14 +68,14 @@
                            class="field__slider"
                            id="down-payment-slider"
                            min="10"
-                           max="90"
+                           max="100"
                            step="5"
                            value="30">
-                    <span class="field__hint">Обычно не меньше 30%</span>
+                    <span class="field__hint" id="down-payment-hint">Обычно не меньше 30%</span>
                 </div>
 
                 <div class="field">
-                    <label class="field__label">Твой доход в месяц</label>
+                    <label class="field__label">Ваш доход в месяц</label>
                     <div class="field__input-wrap">
                         <input type="text"
                                class="field__input"
@@ -120,7 +121,7 @@
                                class="field__input"
                                id="savings"
                                inputmode="numeric"
-                               value="500 000">
+                               value="200 000">
                         <span class="field__suffix">₽</span>
                     </div>
                     <input type="range"
@@ -129,8 +130,8 @@
                            min="0"
                            max="20000000"
                            step="100000"
-                           value="500000">
-                    <span class="field__hint">Которые готовы вложить</span>
+                           value="200000">
+                    <span class="field__hint">Которые готовы вложить в квартиру</span>
                 </div>
 
                 <button type="submit" class="btn btn--primary" id="calculate-btn">
@@ -146,9 +147,9 @@
         <section class="screen screen--result" id="screen-result">
             <div class="result">
                 <div class="result__goal">
-                    <span class="result__label">Твоя цель</span>
+                    <span class="result__label">Ваша цель</span>
                     <span class="result__value result__value--goal" id="result-goal">4 500 000 ₽</span>
-                    <span class="result__sublabel">первоначальный взнос</span>
+                    <span class="result__sublabel" id="result-goal-label">первоначальный взнос</span>
                 </div>
 
                 <div class="result__divider"></div>

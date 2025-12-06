@@ -67,6 +67,7 @@ const App = {
 
             // Result elements
             resultGoal: document.getElementById('result-goal'),
+            resultGoalLabel: document.getElementById('result-goal-label'),
             resultTimeline: document.getElementById('result-timeline'),
             resultCurrent: document.getElementById('result-current'),
             resultPlus50: document.getElementById('result-plus50'),
@@ -76,7 +77,11 @@ const App = {
 
             // Action buttons
             backToBot: document.getElementById('back-to-bot'),
-            recalculate: document.getElementById('recalculate')
+            recalculate: document.getElementById('recalculate'),
+
+            // Dynamic hints
+            apartmentPriceHint: document.getElementById('apartment-price-hint'),
+            downPaymentHint: document.getElementById('down-payment-hint')
         };
     },
 
@@ -91,11 +96,15 @@ const App = {
         });
 
         // Input formatting and slider sync
-        this.setupInputSliderPair('apartmentPrice', 'apartmentPriceSlider');
-        this.setupInputSliderPair('downPayment', 'downPaymentSlider', true);
+        this.setupInputSliderPair('apartmentPrice', 'apartmentPriceSlider', false, () => this.updateApartmentPriceHint());
+        this.setupInputSliderPair('downPayment', 'downPaymentSlider', true, () => this.updateDownPaymentHint());
         this.setupInputSliderPair('income', 'incomeSlider');
         this.setupInputSliderPair('expenses', 'expensesSlider');
         this.setupInputSliderPair('savings', 'savingsSlider');
+
+        // Initial hint updates
+        this.updateApartmentPriceHint();
+        this.updateDownPaymentHint();
 
         // Result screen buttons
         this.elements.backToBot.addEventListener('click', () => this.handleBackToBot());
@@ -107,8 +116,9 @@ const App = {
      * @param {string} inputKey - Key for input element
      * @param {string} sliderKey - Key for slider element
      * @param {boolean} isPercent - Whether this is a percentage field
+     * @param {Function} onUpdate - Optional callback on value change
      */
-    setupInputSliderPair(inputKey, sliderKey, isPercent = false) {
+    setupInputSliderPair(inputKey, sliderKey, isPercent = false, onUpdate = null) {
         const input = this.elements[inputKey];
         const slider = this.elements[sliderKey];
 
@@ -117,6 +127,7 @@ const App = {
             const value = Format.parse(input.value);
             slider.value = value;
             this.updateSliderTrack(slider);
+            if (onUpdate) onUpdate();
             TelegramApp.haptic('selection');
         });
 
@@ -137,6 +148,7 @@ const App = {
             const value = parseInt(slider.value, 10);
             input.value = isPercent ? value : Format.number(value);
             this.updateSliderTrack(slider);
+            if (onUpdate) onUpdate();
         });
 
         slider.addEventListener('change', () => {
@@ -170,6 +182,56 @@ const App = {
         ];
 
         sliders.forEach(slider => this.updateSliderTrack(slider));
+    },
+
+    /**
+     * Update apartment price hint based on value
+     */
+    updateApartmentPriceHint() {
+        const price = Format.parse(this.elements.apartmentPrice.value);
+        let hint = '';
+
+        if (price <= 5000000) {
+            hint = 'Студия в регионах';
+        } else if (price <= 10000000) {
+            hint = '1-комнатная в Москве / 2-комнатная в регионах';
+        } else if (price <= 15000000) {
+            hint = '2-комнатная в Москве';
+        } else if (price <= 25000000) {
+            hint = '3-комнатная в Москве';
+        } else if (price <= 40000000) {
+            hint = 'Большая квартира или квартира в центре';
+        } else if (price <= 60000000) {
+            hint = 'Премиум-класс';
+        } else {
+            hint = 'Элитная недвижимость';
+        }
+
+        this.elements.apartmentPriceHint.textContent = hint;
+    },
+
+    /**
+     * Update down payment hint based on value
+     */
+    updateDownPaymentHint() {
+        const percent = Format.parse(this.elements.downPayment.value);
+        let hint = '';
+
+        if (percent < 20) {
+            hint = 'Минимальный взнос, высокая ставка';
+        } else if (percent < 30) {
+            hint = 'Небольшой взнос';
+        } else if (percent < 50) {
+            hint = 'Стандартный взнос';
+        } else if (percent < 80) {
+            hint = 'Большой взнос — выгодные условия';
+        } else if (percent < 100) {
+            hint = 'Почти без ипотеки';
+        } else {
+            hint = 'Покупка без ипотеки';
+        }
+
+        this.elements.downPaymentHint.textContent = hint;
     },
 
     /**
@@ -223,6 +285,13 @@ const App = {
     displayResults(results) {
         // Goal amount
         this.elements.resultGoal.textContent = Format.currency(results.target);
+
+        // Update goal label based on down payment percentage
+        if (results.input.downPaymentPercent === 100) {
+            this.elements.resultGoalLabel.textContent = 'квартира без ипотеки';
+        } else {
+            this.elements.resultGoalLabel.textContent = 'первоначальный взнос';
+        }
 
         // Reset visibility
         this.elements.resultTimeline.classList.remove('hidden');
