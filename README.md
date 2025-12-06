@@ -39,110 +39,163 @@ Telegram Mini App для расчёта времени накопления на
 | 50-64% | 6 лет | 12 лет |
 | ≥ 65% | 7 лет | 15 лет |
 
-При превышении порогов показывается подсказка.
+## Архитектура
 
-## Динамические подсказки
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Telegram App   │────▶│    api.php      │────▶│    SaleBot      │
+│  (frontend JS)  │     │  (PHP proxy)    │     │    CRM API      │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                               │
+                        ┌──────┴──────┐
+                        │ config.php  │
+                        │ (API keys)  │
+                        └─────────────┘
+```
 
-### Стоимость квартиры
-| Цена | Подсказка |
-|------|-----------|
-| ≤ 5 млн | Студия в регионах |
-| ≤ 10 млн | 1-комнатная в Москве / 2-комнатная в регионах |
-| ≤ 15 млн | 2-комнатная в Москве |
-| ≤ 25 млн | 3-комнатная в Москве |
-| ≤ 40 млн | Большая квартира или квартира в центре |
-| ≤ 60 млн | Премиум-класс |
-| > 60 млн | Элитная недвижимость |
-
-### Первоначальный взнос
-| Процент | Подсказка |
-|---------|-----------|
-| < 20% | Минимальный взнос, высокая ставка |
-| < 30% | Небольшой взнос |
-| < 50% | Стандартный взнос |
-| < 80% | Большой взнос — выгодные условия |
-| < 100% | Почти без ипотеки |
-| 100% | Покупка без ипотеки |
-
-## Интеграция с Telegram
-
-### Инициализация
-- Используется Telegram WebApp SDK
-- При запуске в браузере (не в Telegram) — mock-режим для тестирования
-- Определение среды по наличию `initData`
-
-### Haptic Feedback
-- `selection` — при изменении слайдера
-- `impact light` — при отпускании слайдера, переключении экранов
-- `notification success` — при успешном расчёте
-- `notification error` — при ошибке валидации
+- **Frontend** — чистый HTML/CSS/JS, работает в Telegram WebView
+- **api.php** — безопасный прокси, хранит API ключ на сервере
+- **config.php** — конфиденциальные данные (не в git)
 
 ## Интеграция с CRM (SaleBot)
 
-### Webhook
+### Endpoint
 ```
 POST https://chatter.salebot.pro/api/{API_KEY}/tg_callback
 ```
 
-### Payload
+### Payload (flat format)
+Каждый параметр автоматически сохраняется как переменная сделки в SaleBot:
+
 ```json
 {
-  "user_id": 123456789,
-  "message": {
-    "action": "calculator_result",
-    "apartment_price": 15000000,
-    "down_payment_pct": 30,
-    "income": 350000,
-    "expenses": 200000,
-    "savings": 200000,
-    "result_months": 32,
-    "target_amount": 4500000,
-    "scenario_type": "normal",
-    "start_param": "ad_campaign_1",
-    "timestamp": "2025-01-15T12:00:00.000Z"
-  }
+  "user_id": 68366024,
+  "group_id": "financeforitbot",
+  "message": "calculator_result",
+  "calc_apartment_price": 15000000,
+  "calc_down_payment_pct": 30,
+  "calc_income": 350000,
+  "calc_expenses": 200000,
+  "calc_savings": 200000,
+  "calc_monthly_savings": 150000,
+  "calc_target_amount": 4500000,
+  "calc_result_months": 29,
+  "calc_scenario_type": "normal",
+  "calc_term_category": "normal",
+  "calc_start_param": "ad_campaign_1",
+  "calc_timestamp": "2025-12-06T16:05:00.000Z"
 }
 ```
 
-## Технические детали
+### Переменные в SaleBot
+После расчёта в карточке клиента появятся:
+- `calc_apartment_price` — стоимость квартиры
+- `calc_down_payment_pct` — процент взноса
+- `calc_income` — доход
+- `calc_expenses` — расходы
+- `calc_savings` — накопления
+- `calc_monthly_savings` — ежемесячные накопления
+- `calc_target_amount` — целевая сумма
+- `calc_result_months` — месяцев до цели (-1 если невозможно)
+- `calc_scenario_type` — тип сценария
+- `calc_term_category` — категория срока
+- `calc_start_param` — UTM/start параметр
+- `calc_timestamp` — время расчёта
 
-### Файловая структура
+## Безопасность
+
+### Реализованные меры
+
+| Мера | Описание |
+|------|----------|
+| **API ключ на сервере** | Ключ хранится в `config.php`, не попадает в git и не виден клиенту |
+| **Origin/Referer проверка** | Только запросы с разрешённых доменов |
+| **Content-Type валидация** | Только `application/json` принимается |
+| **Payload size limit** | Максимум 16KB на запрос |
+| **Rate limiting** | 10 запросов в минуту на IP |
+| **Input validation** | Проверка `user_id` (numeric) и `message` (required) |
+| **Timeout protection** | curl таймауты 5s/10s |
+| **Error logging** | Ошибки в отдельный файл, не раскрываются клиенту |
+
+### Файлы вне git
+- `config.php` — API ключи
+- `api-errors.log` — логи ошибок
+
+## Файловая структура
+
 ```
 mortgage-calculator/
-├── index.html          # Основная разметка
+├── index.html              # Основная разметка
+├── api.php                 # Безопасный прокси для SaleBot
+├── config.php              # API ключи (не в git)
+├── config.example.php      # Шаблон конфигурации
+├── .gitignore
+├── README.md
 ├── css/
-│   └── style.css       # Стили (CSS Variables, анимации)
+│   └── style.css           # Стили (CSS Variables, анимации)
 └── js/
-    ├── format.js       # Форматирование чисел и дат
-    ├── calculator.js   # Логика расчётов и валидация
-    ├── telegram.js     # Интеграция с Telegram и SaleBot
-    └── app.js          # Главный контроллер приложения
+    ├── format.js           # Форматирование чисел и дат
+    ├── calculator.js       # Логика расчётов и валидация
+    ├── telegram.js         # Интеграция с Telegram и CRM
+    └── app.js              # Главный контроллер приложения
 ```
 
-### Дизайн
+## Дизайн
+
 - **Тема**: тёмная (Dark Luxury)
 - **Основной цвет**: `#0F172A`
 - **Акцент**: `#00D97E` (зелёный)
 - **Шрифты**: Unbounded (заголовки), Manrope (текст)
-- **Слайдеры**: увеличенные для удобства на мобильных (32px thumb)
+- **Слайдеры**: увеличенные для мобильных (32px thumb, 8px track)
 - **Анимации**: плавные переходы, staggered появление элементов
 
 ### Особенности мобильной версии
 - `format-detection: telephone=no` — отключение автоопределения телефонов на iOS
 - Скрытый scrollbar с сохранением прокрутки
 - Safe area поддержка для iPhone с чёлкой
-- Компактный экран результатов для размещения на одном экране
+- Haptic feedback в Telegram
 
 ## Деплой
 
 ### Требования
-- Статический хостинг (nginx, Apache, GitHub Pages, etc.)
+- PHP 7.4+ с curl
 - HTTPS обязателен для Telegram Mini App
+- Запись в `sys_get_temp_dir()` для rate limiting
 
-### Настройка бота
-1. Создать Mini App через @BotFather
-2. Указать URL: `https://your-domain.com/mortgage-calculator/`
-3. Добавить API ключ SaleBot в `js/telegram.js`
+### Установка
+
+1. Клонировать репозиторий:
+```bash
+git clone https://github.com/egsok/mortgage-calculator.git
+cd mortgage-calculator
+```
+
+2. Создать конфигурацию:
+```bash
+cp config.example.php config.php
+nano config.php
+```
+
+3. Заполнить `config.php`:
+```php
+<?php
+return [
+    'api_key' => 'YOUR_SALEBOT_API_KEY',
+    'group_id' => 'YOUR_BOT_USERNAME'
+];
+```
+
+4. Настроить Mini App в @BotFather:
+   - `/newapp` или `/editapp`
+   - Указать URL: `https://your-domain.com/mortgage-calculator/`
+
+### Обновление
+```bash
+cd /var/www/your-site/mortgage-calculator
+git pull
+```
+
+`config.php` не перезапишется — он в `.gitignore`.
 
 ## Локальная разработка
 
@@ -154,4 +207,15 @@ npx http-server -p 8080
 open http://localhost:8080
 ```
 
-В браузере работает mock-режим с тестовыми данными пользователя.
+В браузере работает mock-режим с тестовыми данными пользователя (user_id: 123456789).
+
+## Telegram Integration
+
+### Haptic Feedback
+- `selection` — при изменении слайдера
+- `impact light` — при отпускании слайдера, переключении экранов
+- `notification success` — при успешном расчёте
+- `notification error` — при ошибке валидации
+
+### Deep Links
+Start параметр из ссылки `t.me/bot?startapp=campaign_1` сохраняется в `calc_start_param` для аналитики.

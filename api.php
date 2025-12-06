@@ -22,6 +22,49 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// Проверка Content-Type
+$content_type = $_SERVER['CONTENT_TYPE'] ?? '';
+if (strpos($content_type, 'application/json') === false) {
+    http_response_code(415);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Content-Type must be application/json']);
+    exit;
+}
+
+// Лимит размера payload (16KB макс)
+$content_length = $_SERVER['CONTENT_LENGTH'] ?? 0;
+if ($content_length > 16384) {
+    http_response_code(413);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Payload too large']);
+    exit;
+}
+
+// Простой rate limiting (10 запросов в минуту на IP)
+$rate_limit_file = sys_get_temp_dir() . '/mortgage_calc_rate_' . md5($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+$rate_limit = 10;
+$rate_window = 60; // секунд
+
+$requests = [];
+if (file_exists($rate_limit_file)) {
+    $requests = json_decode(file_get_contents($rate_limit_file), true) ?: [];
+}
+
+// Удаляем старые записи
+$now = time();
+$requests = array_filter($requests, fn($t) => ($now - $t) < $rate_window);
+
+if (count($requests) >= $rate_limit) {
+    http_response_code(429);
+    header('Content-Type: application/json');
+    header('Retry-After: 60');
+    echo json_encode(['error' => 'Too many requests']);
+    exit;
+}
+
+$requests[] = $now;
+file_put_contents($rate_limit_file, json_encode($requests));
+
 // Проверка Origin - только с нашего домена
 $allowed_origins = [
     'https://egorsokolov.ru',
