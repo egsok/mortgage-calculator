@@ -65,30 +65,38 @@ if (count($requests) >= $rate_limit) {
 $requests[] = $now;
 file_put_contents($rate_limit_file, json_encode($requests));
 
-// Проверка Origin - только с нашего домена
+// Проверка Origin - только с нашего домена или VK iframe
 $allowed_origins = [
     'https://egorsokolov.ru',
+    'https://vk.com',             // VK Mini App iframe
+    'https://m.vk.com',           // VK мобильная версия
     'http://localhost:8080',      // для локальной разработки
     'http://192.168.0.44:8080'    // для тестов с телефона
 ];
 
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if (!in_array($origin, $allowed_origins)) {
-    // Проверяем Referer как fallback (для Telegram WebView)
+    // Проверяем Referer как fallback (для WebView)
     $referer = $_SERVER['HTTP_REFERER'] ?? '';
     $valid_referer = false;
-    foreach ($allowed_origins as $allowed) {
+
+    // Проверяем наш домен и VK
+    $allowed_referers = ['https://egorsokolov.ru', 'https://vk.com', 'https://m.vk.com'];
+    foreach ($allowed_referers as $allowed) {
         if (strpos($referer, $allowed) === 0) {
             $valid_referer = true;
             break;
         }
     }
-    
-    // Telegram WebApp может не слать Origin/Referer, проверяем User-Agent
+
+    // WebApp может не слать Origin/Referer, проверяем User-Agent
     $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
     $is_telegram = (strpos($user_agent, 'Telegram') !== false);
-    
-    if (!$valid_referer && !$is_telegram) {
+    $is_vk = (strpos($user_agent, 'VKAndroidApp') !== false)
+          || (strpos($user_agent, 'VKiOSApp') !== false)
+          || (strpos($user_agent, 'vk_app') !== false);
+
+    if (!$valid_referer && !$is_telegram && !$is_vk) {
         http_response_code(403);
         header('Content-Type: application/json');
         echo json_encode(['error' => 'Forbidden']);
