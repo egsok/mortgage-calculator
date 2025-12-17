@@ -84,7 +84,11 @@ const App = {
 
             // Dynamic hints
             apartmentPriceHint: document.getElementById('apartment-price-hint'),
-            downPaymentHint: document.getElementById('down-payment-hint')
+            downPaymentHint: document.getElementById('down-payment-hint'),
+
+            // Checklist CTA
+            checklistCta: document.getElementById('checklist-cta'),
+            getChecklistBtn: document.getElementById('get-checklist')
         };
     },
 
@@ -112,6 +116,11 @@ const App = {
         // Result screen buttons
         this.elements.backToBot.addEventListener('click', () => this.handleBackToBot());
         this.elements.recalculate.addEventListener('click', () => this.showScreen('input'));
+
+        // Checklist CTA
+        if (this.elements.getChecklistBtn) {
+            this.elements.getChecklistBtn.addEventListener('click', () => this.handleGetChecklist());
+        }
 
         // Scroll indicator
         this.setupScrollIndicator();
@@ -382,6 +391,37 @@ const App = {
         } catch (error) {
             console.error('Failed to send to CRM:', error);
             // Don't show error to user - CRM sync is not critical
+        }
+    },
+
+    /**
+     * Handle get checklist button
+     */
+    async handleGetChecklist() {
+        const btn = this.elements.getChecklistBtn;
+        const originalText = btn.textContent;
+
+        // Disable button
+        btn.disabled = true;
+        btn.textContent = '...';
+
+        const success = await VKApp.requestChecklist();
+
+        if (success) {
+            // Show success state
+            btn.textContent = '✓ Отправлено';
+            btn.classList.add('cta-card__btn--success');
+
+            // Hide the whole CTA after delay
+            setTimeout(() => {
+                if (this.elements.checklistCta) {
+                    this.elements.checklistCta.style.display = 'none';
+                }
+            }, 2000);
+        } else {
+            // Reset button
+            btn.disabled = false;
+            btn.textContent = originalText;
         }
     },
 

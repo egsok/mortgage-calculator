@@ -223,6 +223,76 @@ const VKApp = {
     },
 
     /**
+     * Request permission to send messages from community
+     * @param {string} reason - Reason/key for the request (e.g., 'checklist')
+     * @returns {Promise<boolean>} True if permission granted
+     */
+    async requestMessagesPermission(reason = 'checklist') {
+        if (!this.bridge) {
+            console.warn('VK Bridge not available');
+            return false;
+        }
+
+        try {
+            const data = await this.bridge.send('VKWebAppAllowMessagesFromGroup', {
+                group_id: 684295,
+                key: `${reason}_${this.user?.id}_${Date.now()}`
+            });
+
+            if (data.result) {
+                console.log('User granted messages permission');
+                this.haptic('notification', 'success');
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.log('Messages permission denied or error:', error);
+            this.haptic('notification', 'error');
+            return false;
+        }
+    },
+
+    /**
+     * Request checklist and notify SaleBot
+     * @returns {Promise<boolean>} Success status
+     */
+    async requestChecklist() {
+        // First request permission
+        const granted = await this.requestMessagesPermission('checklist');
+
+        if (!granted) {
+            return false;
+        }
+
+        // Notify SaleBot that user wants checklist
+        try {
+            const response = await fetch(this.apiEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    platform: 'vk',
+                    user_id: this.user?.id,
+                    message: 'checklist_request',
+                    checklist_type: 'financial_holes_it',
+                    start_param: this.startParam || ''
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            console.log('Checklist request sent to CRM');
+            return true;
+        } catch (error) {
+            console.error('Failed to send checklist request:', error);
+            return false;
+        }
+    },
+
+    /**
      * Close the Mini App and return to VK
      */
     close() {
