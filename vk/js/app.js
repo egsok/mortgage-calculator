@@ -414,9 +414,18 @@ const App = {
             currentEl.classList.remove('exit');
             nextEl.classList.add('active');
 
-            // Reset scroll position (both element and window for desktop)
+            // Reset scroll position
             nextEl.scrollTop = 0;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Scroll to top (works in iframe too)
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+
+            // Also try scrollIntoView as fallback
+            const app = document.querySelector('.app');
+            if (app) {
+                app.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }, 50);
 
         this.currentScreen = screen;
