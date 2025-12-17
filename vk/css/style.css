@@ -724,6 +724,60 @@ button {
 }
 
 /* --------------------------------------------------------------------------
+   Scroll Indicator (hints user to scroll down)
+   -------------------------------------------------------------------------- */
+.scroll-indicator {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    z-index: 100;
+}
+
+.scroll-indicator.visible {
+    opacity: 1;
+}
+
+.scroll-indicator__text {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.scroll-indicator__arrow {
+    width: 24px;
+    height: 24px;
+    color: var(--accent-primary);
+    animation: bounce 1.5s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translateY(6px);
+        opacity: 1;
+    }
+}
+
+/* Hide scroll indicator when scrolled or on mobile */
+@media (max-height: 700px) {
+    .scroll-indicator {
+        display: none;
+    }
+}
+
+/* --------------------------------------------------------------------------
    Loading State
    -------------------------------------------------------------------------- */
 .btn--loading {

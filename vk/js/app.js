@@ -47,6 +47,9 @@ const App = {
             screenInput: document.getElementById('screen-input'),
             screenResult: document.getElementById('screen-result'),
 
+            // Scroll indicator
+            scrollIndicator: document.getElementById('scroll-indicator'),
+
             // Form
             form: document.getElementById('calculator-form'),
             calculateBtn: document.getElementById('calculate-btn'),
@@ -109,6 +112,45 @@ const App = {
         // Result screen buttons
         this.elements.backToBot.addEventListener('click', () => this.handleBackToBot());
         this.elements.recalculate.addEventListener('click', () => this.showScreen('input'));
+
+        // Scroll indicator
+        this.setupScrollIndicator();
+    },
+
+    /**
+     * Setup scroll indicator that shows when content is scrollable
+     */
+    setupScrollIndicator() {
+        const indicator = this.elements.scrollIndicator;
+        if (!indicator) return;
+
+        // Check if content is scrollable and show indicator
+        const checkScroll = () => {
+            const screen = this.elements.screenInput.classList.contains('active')
+                ? this.elements.screenInput
+                : this.elements.screenResult;
+
+            const isScrollable = screen.scrollHeight > screen.clientHeight;
+            const isNearBottom = screen.scrollTop + screen.clientHeight >= screen.scrollHeight - 50;
+            const hasScrolled = screen.scrollTop > 20;
+
+            // Show indicator if scrollable, not near bottom, and hasn't scrolled much
+            if (isScrollable && !isNearBottom && !hasScrolled) {
+                indicator.classList.add('visible');
+            } else {
+                indicator.classList.remove('visible');
+            }
+        };
+
+        // Initial check after small delay (for animations)
+        setTimeout(checkScroll, 600);
+
+        // Check on scroll
+        this.elements.screenInput.addEventListener('scroll', checkScroll, { passive: true });
+        this.elements.screenResult.addEventListener('scroll', checkScroll, { passive: true });
+
+        // Check on window resize
+        window.addEventListener('resize', checkScroll, { passive: true });
     },
 
     /**
@@ -355,6 +397,11 @@ const App = {
      * @param {string} screen - 'input' or 'result'
      */
     showScreen(screen) {
+        // Hide scroll indicator during transition
+        if (this.elements.scrollIndicator) {
+            this.elements.scrollIndicator.classList.remove('visible');
+        }
+
         // Add exit class to current screen
         const currentEl = screen === 'input' ? this.elements.screenResult : this.elements.screenInput;
         const nextEl = screen === 'input' ? this.elements.screenInput : this.elements.screenResult;
@@ -366,6 +413,9 @@ const App = {
         setTimeout(() => {
             currentEl.classList.remove('exit');
             nextEl.classList.add('active');
+
+            // Reset scroll position
+            nextEl.scrollTop = 0;
         }, 50);
 
         this.currentScreen = screen;

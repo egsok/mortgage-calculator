@@ -106,6 +106,28 @@ const VKApp = {
             status_bar_style: 'light',
             action_bar_color: '#0F172A'
         }).catch(() => {});
+
+        // Resize window on desktop to show full content
+        this.resizeWindow();
+    },
+
+    /**
+     * Resize the iframe window (desktop only)
+     * VK allows height from 500 to 4050 pixels
+     */
+    resizeWindow() {
+        if (!this.bridge) return;
+
+        const platform = this.getPlatform();
+
+        // Only resize on desktop platforms (iframe)
+        if (platform === 'desktop_web' || platform === 'web') {
+            this.bridge.send('VKWebAppResizeWindow', {
+                height: 900 // Enough to show all fields without scroll
+            })
+            .then(() => console.log('Window resized to 900px'))
+            .catch((e) => console.debug('Resize not supported:', e));
+        }
     },
 
     /**
