@@ -663,12 +663,63 @@ button {
     }
 }
 
-/* For larger screens (desktop testing) */
+/* --------------------------------------------------------------------------
+   Desktop Adaptation (VK iframe, web browsers)
+   -------------------------------------------------------------------------- */
 @media (min-width: 600px) {
+    /* Keep .screen full-width for scroll to work anywhere */
     .screen {
-        max-width: 480px;
-        margin: 0 auto;
+        padding: var(--space-xl) var(--space-lg);
+    }
+
+    /* Center content with max-width on inner elements */
+    .header,
+    .form,
+    .result {
+        max-width: 520px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Subtle card effect for content area */
+    .form,
+    .result {
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(51, 65, 85, 0.5);
+        border-radius: var(--radius-xl);
         padding: var(--space-xl);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* Adjust field spacing inside card */
+    .form {
+        gap: var(--space-xl);
+    }
+
+    /* Enhanced hover states for desktop */
+    .field__input-wrap:hover {
+        border-color: rgba(0, 217, 126, 0.3);
+    }
+
+    .btn--primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 50px var(--accent-primary-glow), 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn--secondary:hover {
+        transform: translateY(-1px);
+    }
+
+    .timeline-item:hover {
+        border-left-width: 4px;
+        transform: translateX(2px);
+    }
+
+    /* Smoother slider interaction on desktop */
+    .field__slider:hover::-webkit-slider-thumb {
+        transform: scale(1.05);
+        box-shadow: var(--shadow-glow), 0 4px 12px rgba(0, 0, 0, 0.4);
     }
 }
 
