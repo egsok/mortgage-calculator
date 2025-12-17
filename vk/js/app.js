@@ -408,16 +408,9 @@ const App = {
         const success = await VKApp.requestChecklist();
 
         if (success) {
-            // Show success state
+            // Show success state - keep visible
             btn.textContent = '✓ Отправлено';
             btn.classList.add('cta-card__btn--success');
-
-            // Hide the whole CTA after delay
-            setTimeout(() => {
-                if (this.elements.checklistCta) {
-                    this.elements.checklistCta.style.display = 'none';
-                }
-            }, 2000);
         } else {
             // Reset button
             btn.disabled = false;
