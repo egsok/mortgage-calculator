@@ -122,11 +122,20 @@ if (!file_exists($config_file)) {
 $config = include($config_file);
 $api_key = $config['api_key'];
 $group_id = $config['group_id'];
-$salebot_url = "https://chatter.salebot.pro/api/{$api_key}/tg_callback";
 
-// Получаем входные данные
+// Получаем входные данные для определения платформы
 $input = file_get_contents('php://input');
 $data = json_decode($input, true);
+
+// Определяем платформу (telegram по умолчанию)
+$platform = $data['platform'] ?? 'telegram';
+
+// Выбираем правильный callback endpoint
+if ($platform === 'vk') {
+    $salebot_url = "https://chatter.salebot.pro/api/{$api_key}/vk_callback";
+} else {
+    $salebot_url = "https://chatter.salebot.pro/api/{$api_key}/tg_callback";
+}
 
 // Валидация
 if (!$data) {
