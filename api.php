@@ -129,7 +129,8 @@ if (!file_exists($config_file)) {
 }
 $config = include($config_file);
 $api_key = $config['api_key'];
-$group_id = $config['group_id'];
+$group_id_telegram = $config['group_id'];
+$group_id_vk = $config['group_id_vk'] ?? null;
 
 // Получаем входные данные для определения платформы
 $input = file_get_contents('php://input');
@@ -164,8 +165,17 @@ if (!isset($data['message'])) {
     exit;
 }
 
-// Добавляем group_id в данные для SaleBot
-$data['group_id'] = $group_id;
+// Добавляем правильный group_id в зависимости от платформы
+if ($platform === 'vk') {
+    if (!$group_id_vk) {
+        http_response_code(500);
+        echo json_encode(['error' => 'VK group_id not configured']);
+        exit;
+    }
+    $data['group_id'] = $group_id_vk;
+} else {
+    $data['group_id'] = $group_id_telegram;
+}
 $payload = json_encode($data);
 
 // Пересылаем в SaleBot
