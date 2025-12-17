@@ -16,4 +16,4 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd /var/www/staging/mortgage-calculator
-            sudo -u www-data git pull origin main
+            sudo -u www-data git -c safe.directory=/var/www/staging/mortgage-calculator pull origin main
