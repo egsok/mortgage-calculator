@@ -123,7 +123,7 @@ const VKApp = {
         // Only resize on desktop platforms (iframe)
         if (platform === 'desktop_web' || platform === 'web') {
             this.bridge.send('VKWebAppResizeWindow', {
-                height: 1150 // Fit all content without internal scroll
+                height: 1000 // Exact fit for form content
             })
             .then(() => console.log('Window resized to 1150px'))
             .catch((e) => console.debug('Resize not supported:', e));
