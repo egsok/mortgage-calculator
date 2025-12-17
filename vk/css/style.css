@@ -667,9 +667,17 @@ button {
    Desktop Adaptation (VK iframe, web browsers)
    -------------------------------------------------------------------------- */
 @media (min-width: 600px) {
-    /* Keep .screen full-width for scroll to work anywhere */
+    /* On desktop, disable internal scroll - use browser scroll instead */
+    html, body, .app {
+        height: auto;
+        overflow: visible;
+    }
+
     .screen {
+        position: relative;
         padding: var(--space-xl) var(--space-lg);
+        padding-bottom: var(--space-2xl);
+        overflow: visible;
     }
 
     /* Center content with max-width on inner elements */
