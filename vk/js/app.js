@@ -414,8 +414,9 @@ const App = {
             currentEl.classList.remove('exit');
             nextEl.classList.add('active');
 
-            // Reset scroll position
+            // Reset scroll position (both element and window for desktop)
             nextEl.scrollTop = 0;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 50);
 
         this.currentScreen = screen;
