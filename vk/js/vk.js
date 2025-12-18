@@ -198,7 +198,11 @@ const VKApp = {
             calc_scenario_type: data.scenarioType,
             calc_term_category: data.termCategory,
             calc_start_param: this.startParam || '',
-            calc_timestamp: new Date().toISOString()
+            calc_timestamp: new Date().toISOString(),
+            // Подушка безопасности в месяцах (накоплено / расходы)
+            cushion_months: data.input.expenses > 0
+                ? Math.round((data.input.savings / data.input.expenses) * 10) / 10
+                : 0
         };
 
         try {
