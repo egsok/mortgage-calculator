@@ -79,7 +79,6 @@ const App = {
             resultSuccess: document.getElementById('result-success'),
 
             // Action buttons
-            backToBot: document.getElementById('back-to-bot'),
             recalculate: document.getElementById('recalculate'),
 
             // Dynamic hints
@@ -114,7 +113,6 @@ const App = {
         this.updateDownPaymentHint();
 
         // Result screen buttons
-        this.elements.backToBot.addEventListener('click', () => this.handleBackToBot());
         this.elements.recalculate.addEventListener('click', () => this.showScreen('input'));
 
         // Checklist CTA
@@ -399,30 +397,24 @@ const App = {
      */
     async handleGetChecklist() {
         const btn = this.elements.getChecklistBtn;
-        const originalText = btn.textContent;
+        const titleEl = btn.querySelector('.btn__title');
+        const originalTitle = titleEl ? titleEl.textContent : '';
 
-        // Disable button
+        // Disable button and show loading
         btn.disabled = true;
-        btn.textContent = '...';
+        if (titleEl) titleEl.textContent = 'Отправляем...';
 
         const success = await VKApp.requestChecklist();
 
         if (success) {
             // Show success state - keep visible
-            btn.textContent = '✓ Отправлено';
-            btn.classList.add('cta-card__btn--success');
+            btn.classList.add('btn--success');
+            if (titleEl) titleEl.textContent = 'Чек-лист отправлен';
         } else {
             // Reset button
             btn.disabled = false;
-            btn.textContent = originalText;
+            if (titleEl) titleEl.textContent = originalTitle;
         }
-    },
-
-    /**
-     * Handle back to bot button
-     */
-    handleBackToBot() {
-        VKApp.close();
     },
 
     /**
