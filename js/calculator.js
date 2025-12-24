@@ -23,7 +23,8 @@ const Calculator = {
         } = params;
 
         // Calculate target (down payment goal)
-        const target = apartmentPrice * (downPaymentPercent / 100);
+        // Round to avoid floating point precision issues (e.g., 23500000 * 0.35 = 8224999.999...)
+        const target = Math.round(apartmentPrice * (downPaymentPercent / 100));
 
         // Calculate remaining amount
         const remaining = Math.max(0, target - savings);
